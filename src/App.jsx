@@ -18,6 +18,8 @@ mask truth -> 42;
 echo(truth);`
   );
   const [output, setOutput] = useState("The void awaits your command...");
+  const [sanity, setSanity] = useState(100);
+  const [showGlitch, setShowGlitch] = useState(false);
 
   const runCode = () => {
     if (!interpreter) {
@@ -29,10 +31,46 @@ echo(truth);`
       console.log("Executing Code:\n", code);
       const result = interpreter.run_code(code);
       setOutput(result);
+
+      const newSanity = interpreter.get_sanity();
+      setSanity(newSanity);
+
+      // The Crossroads Glitch
+      if (newSanity < 20 && Math.random() > 0.7) {
+        setShowGlitch(true);
+        setTimeout(() => setShowGlitch(false), 200);
+      }
     } catch (e) {
       console.error(e);
       setOutput("Runtime Horror: " + e);
     }
+  };
+
+  // Helper for dynamic styles
+  const getSanityEffects = () => {
+    const effects = {};
+    
+    if (sanity < 80) {
+      effects.filter = 'blur(0.5px)';
+    }
+    
+    if (sanity < 50) {
+      effects.color = '#550000';
+      effects.transform = `rotate(${Math.random() - 0.5}deg)`;
+    }
+    
+    if (sanity < 20) {
+      effects.filter = 'contrast(1.5) invert(0.1)';
+      effects.animation = 'shake 0.1s infinite';
+    }
+    
+    return effects;
+  };
+
+  const getSanityColor = () => {
+    if (sanity > 70) return '#2e7d32';
+    if (sanity > 30) return '#f9a825';
+    return '#c62828';
   };
 
   const styles = {
@@ -50,6 +88,8 @@ echo(truth);`
       flexDirection: 'column',
       padding: '20px',
       position: 'relative',
+      transition: 'all 0.5s ease',
+      ...getSanityEffects(), // Apply dynamic effects
     },
     header: {
       textAlign: 'center',
@@ -60,6 +100,18 @@ echo(truth);`
       letterSpacing: '4px',
       fontWeight: 'bold',
       textShadow: '2px 2px 0px #A08B70',
+      position: 'relative',
+    },
+    sanityMeter: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      fontSize: '1rem',
+      color: getSanityColor(),
+      border: `2px solid ${getSanityColor()}`,
+      padding: '5px 10px',
+      backgroundColor: 'rgba(0,0,0,0.1)',
+      fontFamily: '"Fira code", monospace',
     },
     bookBody: {
       display: 'flex',
@@ -122,56 +174,101 @@ echo(truth);`
       textTransform: 'uppercase',
       letterSpacing: '2px',
     },
+    glitchOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'black',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      color: 'red',
+      fontSize: '5rem',
+      fontFamily: 'monospace',
+      zIndex: 9999,
+      pointerEvents: 'none',
+      textShadow: '5px 0px 0px yellow',
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.header}>TKIY Code Editor</h1>
-      
-      <div style={styles.bookBody}>
-        {/* Left Page: Input */}
-        <div style={{ ...styles.page, ...styles.leftPage }}>
-          <div style={styles.label}>Inscription</div>
-          <div style={styles.editorContainer}>
-            <Editor
-              value={code}
-              onValueChange={code => setCode(code)}
-              highlight={code => highlight(code, languages.js)}
-              padding={10}
-              style={{
-                fontFamily: '"Fira code", "Fira Mono", monospace',
-                fontSize: 14,
-                backgroundColor: 'transparent',
-                height: '100%',
-              }}
-            />
+    <>
+      <style>
+        {`
+          @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+          }
+        `}
+      </style>
+      <div style={styles.container}>
+        {showGlitch && (
+          <div style={styles.glitchOverlay}>
+            DON'T TURN LEFT
+          </div>
+        )}
+
+        <div style={styles.header}>
+          TKIY Code Editor
+          <div style={styles.sanityMeter}>Sanity: {sanity.toFixed(1)}%</div>
+        </div>
+        
+        <div style={styles.bookBody}>
+          {/* Left Page: Input */}
+          <div style={{ ...styles.page, ...styles.leftPage }}>
+            <div style={styles.label}>Inscription</div>
+            <div style={styles.editorContainer}>
+              <Editor
+                value={code}
+                onValueChange={code => setCode(code)}
+                highlight={code => highlight(code, languages.js)}
+                padding={10}
+                style={{
+                  fontFamily: '"Fira code", "Fira Mono", monospace',
+                  fontSize: 14,
+                  backgroundColor: 'transparent',
+                  height: '100%',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Right Page: Output */}
+          <div style={{ ...styles.page, ...styles.rightPage }}>
+            <div style={styles.label}>Manifestation</div>
+            <div style={styles.outputContainer}>
+              {output}
+            </div>
           </div>
         </div>
 
-        {/* Right Page: Output */}
-        <div style={{ ...styles.page, ...styles.rightPage }}>
-          <div style={styles.label}>Manifestation</div>
-          <div style={styles.outputContainer}>
-            {output}
-          </div>
-        </div>
+        <button 
+          style={styles.button} 
+          onClick={runCode}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'translate(2px, 2px)';
+            e.currentTarget.style.boxShadow = '2px 2px 0px #3e2723';
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'translate(0, 0)';
+            e.currentTarget.style.boxShadow = '4px 4px 0px #3e2723';
+          }}
+        >
+          SIGN
+        </button>
       </div>
-
-      <button 
-        style={styles.button} 
-        onClick={runCode}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = 'translate(2px, 2px)';
-          e.currentTarget.style.boxShadow = '2px 2px 0px #3e2723';
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = 'translate(0, 0)';
-          e.currentTarget.style.boxShadow = '4px 4px 0px #3e2723';
-        }}
-      >
-        SIGN
-      </button>
-    </div>
+    </>
   );
 }
 
@@ -331,7 +428,7 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <Canvas camera={{ position: [0, 0, 7], fov: 60 }}>
+      <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
         {/* Atmosphere */}
         <color attach="background" args={['#050505']} />
         <YellowMist isOpening={isOpening} onFullMist={() => setMode('EDITOR')} />

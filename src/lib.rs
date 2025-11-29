@@ -982,6 +982,8 @@ impl Interpreter {
                 "rift".to_string(),
                 "carcosa".to_string(),
                 "system".to_string(),
+                "creative".to_string(),
+                "spectator".to_string(),
             ],
             output_buffer: String::new(),
         }
@@ -1006,6 +1008,15 @@ impl Interpreter {
             self.log("The King in Yellow: 'You have seen too much.'\n");
             return false; // Stop execution
         }
+
+        // The Crossroads Event
+        if self.sanity < 15.0 && pseudo_random(get_nanos() as usize) > 0.7 {
+            self.log("\n⚠ AT THE CROSSROADS, DON'T TURN LEFT. IT'S LISTENING. ⚠\n");
+        }
+
+        if self.sanity < 5.0 {
+            self.output_buffer.push_str(" don't turn left");
+        }
         
         // Generate phantom variables at low sanity
         if self.sanity < 20.0 && pseudo_random(self.mutations as usize) > 0.95 {
@@ -1020,7 +1031,10 @@ impl Interpreter {
     }
     
     fn spawn_phantom(&mut self) {
-        let phantom_names = vec!["shadow", "echo", "whisper", "void", "fragment"];
+        let phantom_names = vec![
+            "shadow", "echo", "whisper", "void", "fragment",
+            "Avery", "Derlord", "The_Oasis", "Bedrock"
+        ];
         let name = phantom_names[(get_nanos() % phantom_names.len() as u64) as usize];
 
         let value = Value::Quantum(Box::new(QuantumState::Phantom));
@@ -1730,5 +1744,9 @@ impl YellowWebInterpreter {
         }
 
         self.interpreter.output_buffer.clone()
+    }
+
+    pub fn get_sanity(&self) -> f64 {
+        self.interpreter.sanity
     }
 }
