@@ -4,8 +4,10 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "build:wasm": "wasm-pack build --target web --out-dir src/pkg",
     "dev": "vite",
-    "build": "vite build",
+    "dev:full": "npm run build:wasm && vite",
+    "build": "npm run build:wasm && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
