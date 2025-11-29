@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF, Stars } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
@@ -40,6 +40,8 @@ echo(truth);`
       width: '90vw',
       maxWidth: '1000px',
       height: '80vh',
+      maxHeight: '90vh',
+      boxSizing: 'border-box',
       backgroundColor: '#C6B296',
       border: '8px solid #5A3E25',
       boxShadow: '12px 12px 0px rgba(0,0,0,0.5)',
@@ -66,12 +68,14 @@ echo(truth);`
       borderTop: '2px solid #5A3E25',
       borderBottom: '2px solid #5A3E25',
       padding: '20px 0',
+      minHeight: 0,
     },
     page: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
+      minHeight: 0,
     },
     leftPage: {
       borderRight: '2px solid #A08B70',
@@ -94,6 +98,7 @@ echo(truth);`
       borderRadius: '4px',
       overflow: 'auto',
       border: '1px dashed #A08B70',
+      position: 'relative',
     },
     outputContainer: {
       flex: 1,
@@ -137,7 +142,7 @@ echo(truth);`
                 fontFamily: '"Fira code", "Fira Mono", monospace',
                 fontSize: 14,
                 backgroundColor: 'transparent',
-                minHeight: '100%',
+                height: '100%',
               }}
             />
           </div>
@@ -230,7 +235,7 @@ function Grimoire({ isOpening, onClick }) {
   });
 
   return (
-    <group ref={groupRef} onClick={onClick} onPointerOver={() => document.body.style.cursor = 'pointer'} onPointerOut={() => document.body.style.cursor = 'auto'}>
+    <group ref={groupRef} onClick={onClick} onPointerOver={() => document.body.style.cursor = 'pointer'} onPointerOut={() => document.body.style.cursor = 'auto'}> 
        <primitive 
         object={scene} 
         scale={20} 
@@ -241,6 +246,50 @@ function Grimoire({ isOpening, onClick }) {
         <boxGeometry args={[2, 3, 0.5]} />
         <meshBasicMaterial color="red" wireframe />
       </mesh>
+    </group>
+  );
+}
+
+function Temple() {
+  const pillarGroupRef = useRef();
+
+  useFrame((state, delta) => {
+    if (pillarGroupRef.current) {
+      // Slow, unsettling rotation of the pillar ring
+      pillarGroupRef.current.rotation.y += delta * 0.02;
+    }
+  });
+
+  // Pillars
+  const pillarCount = 12;
+  const radius = 20;
+  const pillars = Array.from({ length: pillarCount }).map((_, i) => {
+    const angle = (i / pillarCount) * Math.PI * 2;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    return (
+      <mesh key={i} position={[x, 10, z]}>
+        <cylinderGeometry args={[1, 1, 30, 16]} />
+        <meshStandardMaterial color="#333" roughness={0.9} />
+      </mesh>
+    );
+  });
+
+  return (
+    <group>
+      {/* Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]}>
+        <planeGeometry args={[100, 100]} />
+        <meshStandardMaterial 
+          color="#1a1a1a" 
+          roughness={0.05} 
+          metalness={0.5} 
+        />
+      </mesh>
+      {/* Rotating Pillars */}
+      <group ref={pillarGroupRef}>
+        {pillars}
+      </group>
     </group>
   );
 }
@@ -282,7 +331,7 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+      <Canvas camera={{ position: [0, 0, 7], fov: 60 }}>
         {/* Atmosphere */}
         <color attach="background" args={['#050505']} />
         <YellowMist isOpening={isOpening} onFullMist={() => setMode('EDITOR')} />
@@ -300,16 +349,8 @@ export default function App() {
         {/* The Artifact */}
         <Grimoire isOpening={isOpening} onClick={() => setIsOpening(true)} />
 
-        {/* Background Depth */}
-        <Stars 
-          radius={100} 
-          depth={50} 
-          count={5000} 
-          factor={4} 
-          saturation={0} 
-          fade 
-          speed={1} 
-        />
+        {/* Temple of the King */}
+        <Temple />
       </Canvas>
     </div>
   );
