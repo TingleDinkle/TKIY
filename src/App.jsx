@@ -11,7 +11,7 @@ import 'prismjs/themes/prism.css';
 // Import WASM
 import init, { YellowWebInterpreter } from './pkg/the_yellow_compiler';
 
-function MinecraftEditor({ interpreter }) {
+function MinecraftEditor({ interpreter, onReset }) {
   const [code, setCode] = useState(
     `# Act I: The Yellow Sign
 mask truth -> 42;
@@ -267,6 +267,15 @@ echo(truth);`
         >
           SIGN
         </button>
+        
+        {sanity < 10 && (
+          <button
+            style={{ ...styles.button, backgroundColor: '#b71c1c', marginTop: '10px', fontSize: '0.8rem' }}
+            onClick={onReset}
+          >
+            RESET REALITY
+          </button>
+        )}
       </div>
     </>
   );
@@ -411,6 +420,11 @@ export default function App() {
     loadWasm();
   }, []);
 
+  const resetInterpreter = () => {
+    const interp = new YellowWebInterpreter();
+    setInterpreter(interp);
+  };
+
   if (mode === 'EDITOR') {
     return (
       <div style={{
@@ -421,7 +435,7 @@ export default function App() {
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-        <MinecraftEditor interpreter={interpreter} />
+        <MinecraftEditor interpreter={interpreter} onReset={resetInterpreter} />
       </div>
     );
   }

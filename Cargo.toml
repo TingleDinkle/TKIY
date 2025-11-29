@@ -8,6 +8,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 wasm-bindgen = "0.2"
-js-sys = "0.3"
-regex = "1.10"
-getrandom = { version = "0.2", features = ["js"] }
+# Removed js-sys, console_error_panic_hook, etc to keep it bare metal safe
