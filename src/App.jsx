@@ -207,37 +207,41 @@ function YellowMist({ isOpening, onFullMist }) {
 }
 
 function Grimoire({ isOpening, onClick }) {
-  const ref = useRef();
+  const groupRef = useRef();
   const { scene } = useGLTF('/book.glb');
 
   useFrame((state, delta) => {
-    if (!ref.current) return;
+    if (!groupRef.current) return;
 
     const time = state.clock.getElapsedTime();
 
     if (isOpening) {
       // Violent spin
-      ref.current.rotation.y += delta * 10; 
-      ref.current.rotation.x += delta * 5;
+      groupRef.current.rotation.y += delta * 10; 
+      groupRef.current.rotation.x += delta * 5;
       
       // Rise upward
-      ref.current.position.y += delta * 2;
+      groupRef.current.position.y += delta * 2;
     } else {
       // Gentle idle animation
-      ref.current.position.y = Math.sin(time) * 0.2;
-      ref.current.rotation.y = time * 0.1;
+      groupRef.current.position.y = Math.sin(time) * 0.2 - 2; // -2 offset included here
+      groupRef.current.rotation.y = time * 0.1;
     }
   });
 
   return (
-    <primitive 
-      object={scene} 
-      ref={ref} 
-      position={[0, 0, 0]} 
-      onClick={onClick}
-      onPointerOver={() => document.body.style.cursor = 'pointer'}
-      onPointerOut={() => document.body.style.cursor = 'auto'}
-    />
+    <group ref={groupRef} onClick={onClick} onPointerOver={() => document.body.style.cursor = 'pointer'} onPointerOut={() => document.body.style.cursor = 'auto'}>
+       <primitive 
+        object={scene} 
+        scale={20} 
+        position={[0, 0, 0]}
+      />
+      {/* Debug Mesh: Red Wireframe Box to visualize position if GLB fails */}
+      <mesh>
+        <boxGeometry args={[2, 3, 0.5]} />
+        <meshBasicMaterial color="red" wireframe />
+      </mesh>
+    </group>
   );
 }
 
@@ -278,13 +282,13 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+      <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
         {/* Atmosphere */}
         <color attach="background" args={['#050505']} />
         <YellowMist isOpening={isOpening} onFullMist={() => setMode('EDITOR')} />
         
         {/* Lighting */}
-        <ambientLight intensity={0.2} />
+        <ambientLight intensity={0.5} />
         <pointLight 
           position={[2, 2, 2]} 
           intensity={1.5} 
