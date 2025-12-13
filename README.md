@@ -12,6 +12,8 @@ The experience begins in a dark void where the *King in Yellow* grimoire floats 
 
 As you execute code, the **Sanity System** degrades. Critical sanity levels trigger visual hallucinations, screen shaking, phantom variable manifestations, and warnings from worlds that shouldn't exist.
 
+Go to https://github.com/TingleDinkle/yellow_compiler for reference on how to use the language
+
 ## Motivations & Lore
 
 This project serves as a functional artifact inspired by the Minecraft ARG series surrounding the characters **Avery** and **Derlord**. 
